@@ -1,0 +1,37 @@
+admin
+admin/users
+admin/dashboard
+admin/backup
+internal
+internal/config
+api
+api/orders
+users
+config
+backup
+.env
+.git
+login
+logout
+health
+status
+EOFcd ~/access-guard
+mkdir -p attacks/wordlists
+cat > attacks/wordlists/common-paths.txt << 'EOF'
+admin
+admin/users
+admin/dashboard
+admin/backup
+internal
+internal/config
+api
+api/orders
+users
+config
+backup
+.env
+.git
+login
+logout
+health
+status
