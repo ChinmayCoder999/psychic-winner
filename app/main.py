@@ -5,6 +5,7 @@ from fastapi import FastAPI, Request, HTTPException, Header
 from fastapi.responses import JSONResponse
 import jwt as pyjwt
 
+from fastapi.responses import HTMLResponse
 from database import init_db, get_connection
 from auth import authenticate, create_token, decode_token, SECRET_KEY, ALGORITHM
 
@@ -98,3 +99,40 @@ def list_users(request: Request, authorization: str = Header(None)):
         {"note": "authorized_admin_access"}
     )
     return {"users": [dict(r) for r in rows]}
+
+@app.get("/dashboard", response_class=HTMLResponse)
+def dashboard():
+    rows = []
+    if os.path.exists(LOG_PATH):
+        with open(LOG_PATH) as f:
+            for line in f:
+                line = line.strip()
+                if line:
+                    try:
+                        rows.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+
+    def row_html(r):
+        status = r.get("status")
+        color = "#c0392b" if status == 403 else "#27ae60" if status == 200 else "#7f8c8d"
+        note = r.get("note") or r.get("order_owner", "")
+        return (f"<tr><td>{r.get('time')}</td><td>{r.get('user')}</td>"
+                f"<td>{r.get('role')}</td><td>{r.get('method')}</td>"
+                f"<td>{r.get('path')}</td>"
+                f"<td style='color:{color};font-weight:bold'>{status}</td>"
+                f"<td>{note}</td></tr>")
+
+    rows_html = "".join(row_html(r) for r in reversed(rows[-50:]))
+
+    return f"""
+    <h2>AccessGuard - Live Audit Dashboard</h2>
+    <p>Showing the most recent 50 requests. Refresh to see new activity.</p>
+    <table border="1" cellpadding="6" style="border-collapse:collapse;font-family:Arial;font-size:14px">
+        <tr style="background:#1F4E78;color:white">
+            <th>Time</th><th>User</th><th>Role</th><th>Method</th>
+            <th>Path</th><th>Status</th><th>Note</th>
+        </tr>
+        {rows_html}
+    </table>
+    """
