@@ -64,6 +64,14 @@ def get_order(order_id: int, request: Request, user=None, authorization: str = H
         raise HTTPException(status_code=404, detail="Order not found")
 
     # Note: we deliberately do NOT check row["owner"] == current["sub"] here.
+    if row["owner"] != current["sub"]:
+        write_audit_log(
+            request, current["sub"], current["role"], 403,
+            {"order_id": order_id, "order_owner": row["owner"], "requester": current["sub"],
+             "note": "ownership_check_blocked"}
+        )
+        raise HTTPException(status_code=403, detail="Forbidden: not your order")
+
     write_audit_log(
         request, current["sub"], current["role"], 200,
         {"order_id": order_id, "order_owner": row["owner"], "requester": current["sub"]}
@@ -78,9 +86,15 @@ def list_users(request: Request, authorization: str = Header(None)):
     rows = conn.execute("SELECT username, role FROM users").fetchall()
     conn.close()
 
-    # Note: we deliberately do NOT check current["role"] == "admin" here.
+    if current["role"] != "admin":
+        write_audit_log(
+            request, current["sub"], current["role"], 403,
+            {"note": "role_check_blocked"}
+        )
+        raise HTTPException(status_code=403, detail="Forbidden: admin only")
+
     write_audit_log(
         request, current["sub"], current["role"], 200,
-        {"note": "role_vs_path_mismatch" if current["role"] != "admin" else "authorized_admin_access"}
+        {"note": "authorized_admin_access"}
     )
     return {"users": [dict(r) for r in rows]}
