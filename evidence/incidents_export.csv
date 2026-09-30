@@ -1,0 +1,4 @@
+incident_id,time_detected,rule,severity,ip,user,details,action_taken,time_responded
+1,2026-09-29T09:44:01Z,idor_foreign_order_threshold,Medium,127.0.0.1,alice,"user=alice hit 10 foreign-order reads within 60s, triggering order_id=20 (owner=admin) at 2026-09-29T09:44:01Z",logged_only,2026-09-29T09:44:01Z
+2,2026-09-29T09:59:02Z,access_control_violation,High,127.0.0.1,alice,"user=alice role=user requested /admin/users at 2026-09-29T09:59:02Z",logged_only,2026-09-29T09:59:02Z
+3,2026-09-29T10:01:02Z,access_control_violation,High,127.0.0.1,alice,"user=alice role=user requested /admin/users at 2026-09-29T10:01:02Z",logged_only,2026-09-29T10:01:02Z

@@ -1,3 +1,4 @@
+from incidents_db import init_incidents_db, record_incident
 import sys
 import json
 from datetime import datetime
@@ -17,8 +18,9 @@ def main():
 
     log_path = sys.argv[1]
     print("config:", FOREIGN_THRESHOLD, WINDOW, ADMIN_PREFIX)
+    init_incidents_db()
 
-    foreign_reads = defaultdict(deque)  # user -> deque of timestamps
+    foreign_reads = defaultdict(deque)
     alert_count = 0
 
     with open(log_path) as f:
@@ -35,6 +37,7 @@ def main():
             user = entry.get("user")
             role = entry.get("role")
             path = entry.get("path", "")
+            ip = entry.get("ip")
             ts = entry.get("time")
             if not ts:
                 continue
@@ -46,8 +49,9 @@ def main():
             # Rule 2: non-admin hitting an admin path
             if role != "admin" and path.startswith(ADMIN_PREFIX):
                 alert_count += 1
-                print(f"[ALERT] access_control_violation: user={user} role={role} "
-                      f"requested {path} at {ts}")
+                msg = f"user={user} role={role} requested {path} at {ts}"
+                print(f"[ALERT] access_control_violation: {msg}")
+                record_incident(ts, "access_control_violation", "High", ip, user, msg, "logged_only")
 
             # Rule 1: foreign-order reads within WINDOW seconds
             order_owner = entry.get("order_owner")
@@ -58,10 +62,11 @@ def main():
                     dq.popleft()
                 if len(dq) == FOREIGN_THRESHOLD:
                     alert_count += 1
-                    print(f"[ALERT] idor_foreign_order_threshold: user={user} hit "
-                          f"{len(dq)} foreign-order reads within {WINDOW}s, "
-                          f"triggering order_id={entry.get('order_id')} "
-                          f"(owner={order_owner}) at {ts}")
+                    msg = (f"user={user} hit {len(dq)} foreign-order reads within "
+                           f"{WINDOW}s, triggering order_id={entry.get('order_id')} "
+                           f"(owner={order_owner}) at {ts}")
+                    print(f"[ALERT] idor_foreign_order_threshold: {msg}")
+                    record_incident(ts, "idor_foreign_order_threshold", "Medium", ip, user, msg, "logged_only")
 
     if alert_count == 0:
         print("No findings.")
