@@ -1,0 +1,2 @@
+{"time": "2026-09-29T10:00:41Z", "ip": "127.0.0.1", "user": "alice", "role": "user", "method": "POST", "path": "/login", "status": 200}
+{"time": "2026-09-29T10:01:02Z", "ip": "127.0.0.1", "user": "alice", "role": "user", "method": "GET", "path": "/admin/users", "status": 200, "note": "role_vs_path_mismatch"}

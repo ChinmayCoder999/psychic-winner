@@ -1,0 +1,2 @@
+alice login: <paste your alice curl output>
+admin login: <paste your admin curl output>
