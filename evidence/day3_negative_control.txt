@@ -1,0 +1,2 @@
+config: 10 60 /admin
+No findings.

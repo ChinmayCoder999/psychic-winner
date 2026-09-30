@@ -1,0 +1,4 @@
+config: 10 60 /admin
+[ALERT] idor_foreign_order_threshold: user=alice hit 10 foreign-order reads within 60s, triggering order_id=20 (owner=admin) at 2026-09-29T09:44:01Z
+[ALERT] access_control_violation: user=alice role=user requested /admin/users at 2026-09-29T09:59:02Z
+[ALERT] access_control_violation: user=alice role=user requested /admin/users at 2026-09-29T10:01:02Z
