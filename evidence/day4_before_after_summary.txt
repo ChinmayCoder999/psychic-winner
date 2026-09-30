@@ -6,12 +6,14 @@ BEFORE FIX (Day 2):
 AFTER FIX (Day 4):
 - IDOR loop: 100/200 returned 200 (alice's own orders), 100/200 returned 403 (blocked foreign reads)
 - Admin path access: 403 (blocked by role check)
-- Detector: still fired on both rules (attack failed AND was still detected)
+- Detector: still fired on both rules
+    - idor_foreign_order_threshold: fired on order_id=20 (owner=admin) at 2026-09-30T09:15:28Z
+    - access_control_violation: fired on alice's /admin/users request at 2026-09-30T09:19:59Z
 
 CONCLUSION:
 The ownership check on /api/orders/{id} and the role check on /admin/users now
 prevent the attacks at the application layer. The detection layer continues to
-work independently of whether the attack succeeds, since both rules key off the
+fire independently of whether the attack succeeds, since both rules key off the
 request pattern (owner mismatch, non-admin role on an admin path) rather than
 the response status. This demonstrates defense-in-depth: prevention and
 detection as separate, complementary controls that don't depend on each other.
